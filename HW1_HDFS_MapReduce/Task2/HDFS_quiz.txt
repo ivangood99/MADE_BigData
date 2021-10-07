@@ -1,0 +1,16 @@
+hdfs dfs -mkdir /iv.gudkov.folder
+hdfs dfs -mkdir /iv.gudkov.folder/nested_folder
+#Trash - специальная директория, в которую по умолчанию помещаются удаленные файлы. Физическое удаление происходит только после истечения определенного времени. Для удаления, минуя корзину, нужно использовать команду hdfs dfs -rm -skipTrash /path/to/file
+hdfs dfs -touchz /iv.gudkov.folder/nested_folder/empty_file
+hdfs dfs -rm -skipTrash /iv.gudkov.folder/nested_folder/empty_file
+hdfs dfs -rm -r /iv.gudkov.folder
+
+hdfs dfs -put test_file /iv.gudkov.folder/
+hdfs dfs -cat /iv.gudkov.folder/test_file 
+hdfs dfs -tail /iv.gudkov.folder/test_file 
+hdfs dfs -cat /iv.gudkov.folder/test_file | head
+hdfs dfs -cp /iv.gudkov.folder/test_file /
+
+hdfs dfs -setrep 2 iv.gudkov.folder/test_file      #Изменение числа реплик происходит сразу после исполнения команды, исполнение длится около 4-5 секунд
+hdfs fsck /iv.gudkov.folder/test_file -files -blocks -locations
+hdfs fsck -blockId blk_1073741831

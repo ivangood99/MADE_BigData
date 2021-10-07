@@ -1,0 +1,8 @@
+
+Numpy results:
+	Mean: 152.7206871868289
+	Var: 57672.84569843359
+
+MapReduce results:
+	Mean: 152.7206871868289
+	Var: 57672.8456984336
