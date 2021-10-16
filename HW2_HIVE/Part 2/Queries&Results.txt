@@ -1,0 +1,92 @@
+
+
+Запрос 1. Исполнитель с максимальным числом скробблов:
+
+SELECT artist_mb, scrobbles_lastfm 
+FROM artists
+ORDER BY scrobbles_lastfm DESC
+LIMIT 1
+
+
+Ответ:
+The Beatles
+(517126254 скробблов)
+
+
+
+
+Запрос 2:
+
+SELECT all_tags.lastfm_tag, count(*) AS count_tag
+FROM (SELECT artist_mb, trim(uniqueTag) AS lastfm_tag 
+		FROM (SELECT artist_mb, SPLIT(artists.tags_lastfm, ';') as tagArray FROM artists) art_tags 
+		LATERAL VIEW EXPLODE(art_tags.tagArray) EXPLODED AS uniqueTag 
+		WHERE LENGTH(uniqueTag) > 0) all_tags
+GROUP BY all_tags.lastfm_tag
+ORDER BY count_tag DESC
+LIMIT 1
+
+
+Ответ:
+seen live
+(Встретился 99540 раз)
+
+
+
+
+Запрос 3: Самые популярные исполнители 10 самых популярных тегов ластфм. Вывел топ-10 исполнителей.
+
+SELECT DISTINCT t1.artist_lastfm, t1.listeners_lastfm
+FROM (SELECT artist_lastfm, trim(uniqueTag) AS lastfm_tag, listeners_lastfm
+				FROM (SELECT artist_lastfm, SPLIT(artists.tags_lastfm, ';') as tagArray, listeners_lastfm FROM artists) art_tags2 
+				LATERAL VIEW EXPLODE(art_tags2.tagArray) EXPLODED AS uniqueTag 
+				WHERE LENGTH(uniqueTag) > 0) t1
+
+WHERE t1.lastfm_tag IN (SELECT sub.tag AS tag 
+			FROM (SELECT all_tags.lastfm_tag AS tag, count(*) AS count_tag
+				FROM (SELECT artist_mb, trim(uniqueTag) AS lastfm_tag 
+					FROM (SELECT artist_mb, SPLIT(artists.tags_lastfm, ';') as tagArray FROM artists) art_tags 
+					LATERAL VIEW EXPLODE(art_tags.tagArray) EXPLODED AS uniqueTag 
+					WHERE LENGTH(uniqueTag) > 0) all_tags
+					GROUP BY all_tags.lastfm_tag
+					ORDER BY count_tag DESC
+					LIMIT 10) sub)
+ORDER BY t1.listeners_lastfm DESC
+LIMIT 10;
+
+
+Ответ:
+0	Coldplay	         	5381567
+1	Radiohead	 	4732528
+2	Red Hot Chili Peppers	4620835
+3	Rihanna	      		4558193
+4	Eminem			4517997
+5	The Killers		4428868
+6	Kanye West		4390502
+7	Nirvana			4272894
+8	Muse			4089612
+9	Queen			4023379
+
+
+
+
+
+
+Запрос 4: Топ-5 самых прослушиваемых исполнительниц из США по версии ластфм.
+
+SELECT t2.female_artists as popular_female
+FROM (SELECT art_tags.artist_lastfm AS female_artists, trim(uniqueTag) AS lastfm_tag, art_tags.country_mb, art_tags.listeners_lastfm
+		FROM (SELECT artist_lastfm, SPLIT(artists.tags_lastfm, ';') as tagArray, listeners_lastfm, country_mb FROM artists) art_tags
+        LATERAL VIEW EXPLODE(art_tags.tagArray) EXPLODED AS uniqueTag 
+        WHERE uniqueTag = "female vocalists" AND country_mb = "United States"
+        ORDER BY listeners_lastfm DESC
+        LIMIT 5) t2
+
+Ответ:
+0	Lana Del Rey
+1	Regina Spektor
+2	Colbie Caillat
+3	Sara Bareilles
+4	Fiona Apple
+
+
